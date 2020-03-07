@@ -1,41 +1,61 @@
-import React, { Component } from 'react';
+import { Card, Layout, Text } from '@ui-kitten/components';
+import React, { Component, } from 'react';
 import { inject, observer } from 'mobx-react';
-import {ThemeProvider, Button, Text, Icon, icon} from 'react-native-elements';
+
 import HomeStore from '../../stores/home.store';
+import { ROUTES_NAMES } from '../../routes';
+import { ScrollView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 
 interface Props {
-    homeStore: HomeStore
+    homeStore: HomeStore,
+    navigation: any
 }
 
 @inject('homeStore')
 @observer
 export default class Home extends Component<Props> {
-    
+
+    async componentDidMount() {
+        const { getFilms } = this.props.homeStore;
+        await getFilms();
+    }
+
     render() {
-        const {numbers, increment, reset, decrement} = this.props.homeStore;
-        return (<>
-            <ThemeProvider>
-                <Text>Números</Text>
-                <Text>{numbers}</Text>
-                <Button icon={
-                    <Icon
-                    name="rowing"
-                    color="white"
-                    />
-                } onPress={() => increment()} title="Incrementar"></Button>
-                <Button onPress={() => decrement()} title="Decrementar"></Button>
-                <Button onPress={() => reset()} title="Resetar"></Button>
-                <Button
-  icon={
-    <Icon
-      name="arrow-right"
-      size={15}
-      color="white"
-    />
-  }
-  title="Button with icon component"
-/>
-            </ThemeProvider>
-        </>);
+        const { films } = this.props.homeStore;
+
+        const navigateScreen = (id: number) => {
+            const { navigate } = this.props.navigation;
+            navigate(ROUTES_NAMES.Films, { id });
+        }
+
+        return (<Layout style={{ flex: 1, backgroundColor: 'black' }}>
+            <ScrollView>
+                {films.map((film, index) => (
+                    <Card onPress={() => navigateScreen(film.id)} key={index}>
+                        <Text style={styles.title}>{film.title}</Text>
+                        <Text>Episode {film.episode_id.toString()}</Text>
+                    </Card>
+                ))}
+            </ScrollView>
+        </Layout>);
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingTop: '10',
+        padding: 8,
+    },
+    title: {
+        fontSize: 20,
+    },
+    paragraph: {
+        margin: 24,
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+});
